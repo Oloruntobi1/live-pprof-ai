@@ -10,6 +10,8 @@ import { PprofGraph } from '@/components/charts/pprof-chart'
 import { useWindowListener } from '@/components/window-listener'
 import { useGraphPrefSnap } from '@/components/hooks/use-graph-pref-snap'
 import { useParamAction } from '@/components/hooks/use-param-action'
+import { ProfileInsights } from '@/components/profile-insights'
+import { useGraphData } from '@/components/hooks/use-graph-data'
 
 registerTheme('dark', darkTheme())
 
@@ -24,23 +26,47 @@ export const AllGraphs: React.FC = () => {
     useGraphPrefSnap(PprofType.goroutine),
   ]
 
+  // Lift the hook calls to component level
+  const cpuGraphData = useGraphData({ pprofType: PprofType.cpu })
+  const heapGraphData = useGraphData({ pprofType: PprofType.heap })
+  const allocsGraphData = useGraphData({ pprofType: PprofType.allocs })
+  const goroutineGraphData = useGraphData({ pprofType: PprofType.goroutine })
+
+  // Create a map to easily access the graph data
+  const graphDataMap = {
+    [PprofType.cpu]: cpuGraphData,
+    [PprofType.heap]: heapGraphData,
+    [PprofType.allocs]: allocsGraphData,
+    [PprofType.goroutine]: goroutineGraphData,
+  }
+
   useEffect(() => {
     if (ssr) return
   }, [ssr])
 
   return (
-    <div className="flex flex-row flex-wrap justify-between h-full w-full pb-2 overflow-clip">
+    <div className="grid grid-cols-2 gap-4 h-full w-full pb-2 overflow-hidden">
       {[cpu, heap, allocs, goroutine]
         .filter(snap => snap.prefSnap.enabled)
-        .map(snap => (
-          <div key={snap.pprofType} className="flex flex-col basis-[49%] h-[49%] relative">
-            <ChartOption
-              className={`absolute top-2.5 z-10 ${snap.leftOffsetLarge ? 'left-32' : 'left-20'}`}
-              pprofType={snap.pprofType}
-            />
-            <PprofGraph pprofType={snap.pprofType} />
-          </div>
-        ))}
+        .map(snap => {
+          const graphData = graphDataMap[snap.pprofType]
+          return (
+            <div key={snap.pprofType} className="flex flex-col min-h-[300px] relative">
+              <ChartOption
+                className={`absolute top-2.5 z-10 ${snap.leftOffsetLarge ? 'left-32' : 'left-20'}`}
+                pprofType={snap.pprofType}
+              />
+              <div className="flex flex-row h-full gap-4">
+                <PprofGraph pprofType={snap.pprofType} className="flex-1" />
+                <ProfileInsights 
+                  graphData={graphData} 
+                  pprofType={snap.pprofType} 
+                  className="w-72 shrink-0 max-h-full overflow-y-auto" 
+                />
+              </div>
+            </div>
+          )
+        })}
     </div>
   )
 }
