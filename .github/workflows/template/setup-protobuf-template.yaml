@@ -1,0 +1,11 @@
+---
+name: Setup protobuf
+on: [ workflow_call ]
+
+jobs:
+  setup_protobuf:
+    name: Setup protobuf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: arduino/setup-protoc@v3
+        name: Install Protoc

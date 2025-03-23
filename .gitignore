@@ -1,0 +1,12 @@
+**/.idea
+**/.vscode
+**/.DS_Store
+
+node_modules
+go.work
+package.json
+pnpm-lock.yaml
+live-pprof
+assets/web/html/*
+build
+test-backend/test-backend

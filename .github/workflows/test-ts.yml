@@ -1,0 +1,46 @@
+name: Test TS
+
+on:
+#  push:
+#    branches: [ "main" ]
+#    paths:
+#      - ts/**
+#      - proto/**
+#      - .github/**
+#  pull_request:
+#    branches: [ "main" ]
+#    paths:
+#      - ts/**
+#      - proto/**
+#      - .github/**
+  workflow_dispatch:
+
+jobs:
+  test_ts:
+    name: Test TS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: 'ts/package.json'
+
+      - name: Install ts dependencies
+        run: cd ts && pnpm install
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+
+      - name: Test
+        run: cd ts && make
